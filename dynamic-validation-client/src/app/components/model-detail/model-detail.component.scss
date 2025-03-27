@@ -1,0 +1,17 @@
+.accordion-button:not(.collapsed) {
+    background-color: #f8f9fa;
+    color: #212529;
+  }
+  
+  .table-sm td, .table-sm th {
+    padding: 0.5rem;
+  }
+  
+  pre {
+    margin-bottom: 0;
+    max-height: 120px;
+    overflow-y: auto;
+    background-color: #f8f9fa;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+  }

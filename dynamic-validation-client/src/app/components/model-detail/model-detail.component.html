@@ -1,0 +1,157 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Model Detayları</h2>
+    <div class="btn-group" role="group">
+      <button class="btn btn-primary" (click)="editModel()">
+        <i class="bi bi-pencil"></i> Düzenle
+      </button>
+      <button class="btn btn-success" (click)="testModel()">
+        <i class="bi bi-check2-circle"></i> Test Et
+      </button>
+      <button class="btn btn-secondary" (click)="goBack()">
+        <i class="bi bi-arrow-left"></i> Geri
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="text-center">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Yükleniyor...</span>
+    </div>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+  </div>
+
+  <div *ngIf="!loading && model">
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="mb-0">Temel Bilgiler</h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="mb-3">
+              <strong>Model ID:</strong> {{ model.id }}
+            </div>
+            <div class="mb-3">
+              <strong>Model Adı:</strong> {{ model.name }}
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+              <strong>Açıklama:</strong> 
+              <p>{{ model.description || 'Açıklama yok' }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-4" *ngIf="model.modelValidationRules && model.modelValidationRules.length > 0">
+      <div class="card-header">
+        <h5 class="mb-0">Model Validasyon Kuralları</h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Kural Tipi</th>
+                <th>Hata Mesajı</th>
+                <th>Parametreler</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let rule of model.modelValidationRules; let i = index">
+                <td>{{ i + 1 }}</td>
+                <td>{{ rule.ruleName }}</td>
+                <td>{{ rule.errorMessage }}</td>
+                <td>
+                  <pre *ngIf="rule.parameters">{{ rule.parameters | json }}</pre>
+                  <span *ngIf="!rule.parameters">-</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-4" *ngIf="model.fields && model.fields.length > 0">
+      <div class="card-header">
+        <h5 class="mb-0">Model Alanları</h5>
+      </div>
+      <div class="card-body">
+        <div class="accordion" id="fieldsAccordion">
+          <div class="accordion-item" *ngFor="let field of model.fields; let i = index">
+            <h2 class="accordion-header" [id]="'fieldHeading' + i">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" 
+                [attr.data-bs-target]="'#fieldCollapse' + i" 
+                [attr.aria-expanded]="i === 0" [attr.aria-controls]="'fieldCollapse' + i">
+                <strong>{{ field.name }}</strong> <span class="ms-2 text-muted">({{ field.dataType }})</span>
+              </button>
+            </h2>
+            <div [id]="'fieldCollapse' + i" class="accordion-collapse collapse" 
+              [class.show]="i === 0" [attr.aria-labelledby]="'fieldHeading' + i" 
+              data-bs-parent="#fieldsAccordion">
+              <div class="accordion-body">
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <div><strong>Alan Adı:</strong> {{ field.name }}</div>
+                    <div><strong>Veri Tipi:</strong> {{ field.dataType }}</div>
+                    <div><strong>Zorunlu:</strong> {{ field.isRequired ? 'Evet' : 'Hayır' }}</div>
+                    <div *ngIf="field.maxLength">
+                      <strong>Max Uzunluk:</strong> {{ field.maxLength }}
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div *ngIf="field.description">
+                      <strong>Açıklama:</strong> {{ field.description }}
+                    </div>
+                    <div *ngIf="field.defaultValue">
+                      <strong>Varsayılan Değer:</strong> {{ field.defaultValue }}
+                    </div>
+                    <div><strong>Görüntüleme Sırası:</strong> {{ field.displayOrder }}</div>
+                    <div *ngIf="field.nestedModelId">
+                      <strong>İç Model ID:</strong> {{ field.nestedModelId }}
+                    </div>
+                  </div>
+                </div>
+
+                <div *ngIf="field.validationRules && field.validationRules.length > 0">
+                  <h6 class="mb-2">Validasyon Kuralları</h6>
+                  <div class="table-responsive">
+                    <table class="table table-striped table-sm">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Kural Tipi</th>
+                          <th>Hata Mesajı</th>
+                          <th>Parametreler</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let rule of field.validationRules; let j = index">
+                          <td>{{ j + 1 }}</td>
+                          <td>{{ rule.ruleName }}</td>
+                          <td>{{ rule.errorMessage }}</td>
+                          <td>
+                            <pre *ngIf="rule.parameters">{{ rule.parameters | json }}</pre>
+                            <span *ngIf="!rule.parameters">-</span>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

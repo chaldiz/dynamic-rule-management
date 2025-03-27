@@ -1,0 +1,105 @@
+/* Angular projesi global stilleri */
+
+/* Bootstrap İkonları için stil */
+.bi {
+    vertical-align: -0.125em;
+    margin-right: 0.25rem;
+  }
+  
+  /* Form stilleri */
+  .form-label .text-danger {
+    margin-left: 4px;
+  }
+  
+  textarea.form-control {
+    min-height: 80px;
+  }
+  
+  /* Card stilleri */
+  .card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    margin-bottom: 1.5rem;
+  }
+  
+  .card-header {
+    background-color: rgba(0, 0, 0, 0.03);
+    padding: 0.75rem 1.25rem;
+  }
+  
+  /* Tablo stilleri */
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Accordion stilleri */
+  .accordion-button:not(.collapsed) {
+    background-color: #f8f9fa;
+    color: #212529;
+  }
+  
+  /* JSON ve kod görüntüleme */
+  pre {
+    background-color: #f8f9fa;
+    border-radius: 0.25rem;
+    padding: 0.5rem;
+    margin-bottom: 0;
+    font-size: 0.875rem;
+    max-height: 120px;
+    overflow-y: auto;
+  }
+  
+  /* Validasyon sonuç stilleri */
+  .list-group-item-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+  
+  .alert-success {
+    background-color: #d4edda;
+    color: #155724;
+  }
+  
+  /* Sayfa navigasyon stilleri */
+  .btn-group {
+    .btn {
+      margin-right: 0.25rem;
+      
+      &:last-child {
+        margin-right: 0;
+      }
+    }
+  }
+  
+  /* Form grupları */
+  .border.rounded {
+    padding: 1rem;
+    border-color: #dee2e6 !important;
+  }
+  
+  /* Responsive media sorguları */
+  @media (max-width: 767.98px) {
+    /* Mobil ekranlarda düzenleme */
+    .container {
+      padding-left: 15px;
+      padding-right: 15px;
+    }
+    
+    .card-body {
+      padding: 1rem;
+    }
+    
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      
+      .btn {
+        margin-right: 0;
+        margin-bottom: 0.5rem;
+        
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+    }
+  }

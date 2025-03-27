@@ -1,0 +1,296 @@
+<div class="container mt-4">
+    <h2>{{ isEditMode ? 'Model Düzenle' : 'Yeni Model Oluştur' }}</h2>
+  
+    <div *ngIf="loading" class="text-center my-4">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Yükleniyor...</span>
+      </div>
+    </div>
+  
+    <div *ngIf="error" class="alert alert-danger mt-3">
+      {{ error }}
+    </div>
+  
+    <form [formGroup]="modelForm" (ngSubmit)="onSubmit()" *ngIf="!loading">
+      <!-- Temel Model Bilgileri -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">Temel Bilgiler</h5>
+        </div>
+        <div class="card-body">
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="name" class="form-label">Model Adı <span class="text-danger">*</span></label>
+              <input type="text" id="name" formControlName="name" class="form-control" 
+                [ngClass]="{'is-invalid': modelForm.get('name')?.invalid && modelForm.get('name')?.touched}">
+              <div class="invalid-feedback" *ngIf="modelForm.get('name')?.invalid && modelForm.get('name')?.touched">
+                <span *ngIf="modelForm.get('name')?.errors?.['required']">Model adı gerekli</span>
+                <span *ngIf="modelForm.get('name')?.errors?.['maxlength']">
+                  Model adı 100 karakterden uzun olamaz
+                </span>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label for="description" class="form-label">Açıklama</label>
+              <textarea id="description" formControlName="description" class="form-control"
+                [ngClass]="{'is-invalid': modelForm.get('description')?.invalid && modelForm.get('description')?.touched}">
+              </textarea>
+              <div class="invalid-feedback" 
+                *ngIf="modelForm.get('description')?.invalid && modelForm.get('description')?.touched">
+                <span *ngIf="modelForm.get('description')?.errors?.['maxlength']">
+                  Açıklama 500 karakterden uzun olamaz
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+  
+      <!-- Model Seviyesi Validasyon Kuralları -->
+      <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Model Validasyon Kuralları</h5>
+          <button type="button" class="btn btn-sm btn-outline-primary" (click)="addModelValidationRule()">
+            <i class="bi bi-plus"></i> Kural Ekle
+          </button>
+        </div>
+        <div class="card-body">
+          <div *ngIf="modelValidationRules.length === 0" class="alert alert-info">
+            Henüz validasyon kuralı eklenmemiş. Kural eklemek için "Kural Ekle" düğmesine tıklayın.
+          </div>
+  
+          <div formArrayName="modelValidationRules">
+            <div *ngFor="let rule of modelValidationRules.controls; let i = index" [formGroupName]="i" class="mb-3 p-3 border rounded">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="mb-0">Validasyon Kuralı #{{ i + 1 }}</h6>
+                <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeModelValidationRule(i)">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+  
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label class="form-label">Kural Tipi <span class="text-danger">*</span></label>
+                  <select formControlName="ruleName" class="form-select" (change)="onModelRuleTypeChange(i)">
+                    <option value="">Kural tipi seçin</option>
+                    <option *ngFor="let type of validationRuleTypes" [value]="type.name" 
+                      [disabled]="!type.modelLevel">
+                      {{ type.name }}
+                    </option>
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Hata Mesajı <span class="text-danger">*</span></label>
+                  <input type="text" formControlName="errorMessage" class="form-control">
+                </div>
+              </div>
+  
+              <div formGroupName="parameters">
+                <!-- RequiredFields parametreleri -->
+                <div *ngIf="rule.get('ruleName')?.value === 'RequiredFields'" class="row mb-3">
+                  <div class="col-md-12">
+                    <label class="form-label">Zorunlu Alanlar (virgülle ayırın) <span class="text-danger">*</span></label>
+                    <input type="text" formControlName="fields" class="form-control" 
+                      placeholder="alan1,alan2,alan3">
+                  </div>
+                </div>
+  
+                <!-- ConditionalRequired parametreleri -->
+                <div *ngIf="rule.get('ruleName')?.value === 'ConditionalRequired'" class="row mb-3">
+                  <div class="col-md-4">
+                    <label class="form-label">Şart Alanı <span class="text-danger">*</span></label>
+                    <input type="text" formControlName="ifField" class="form-control">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Şart Değeri <span class="text-danger">*</span></label>
+                    <input type="text" formControlName="ifValue" class="form-control">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Zorunlu Olacak Alanlar <span class="text-danger">*</span></label>
+                    <input type="text" formControlName="thenFields" class="form-control" 
+                      placeholder="alan1,alan2,alan3">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+  
+      <!-- Model Alanları -->
+      <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Model Alanları</h5>
+          <button type="button" class="btn btn-sm btn-outline-primary" (click)="addField()">
+            <i class="bi bi-plus"></i> Alan Ekle
+          </button>
+        </div>
+        <div class="card-body">
+          <div *ngIf="fields.length === 0" class="alert alert-info">
+            Henüz model alanı eklenmemiş. Alan eklemek için "Alan Ekle" düğmesine tıklayın.
+          </div>
+  
+          <div formArrayName="fields">
+            <div *ngFor="let field of fields.controls; let i = index" [formGroupName]="i" class="mb-4 p-3 border rounded">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="mb-0">Alan #{{ i + 1 }}</h6>
+                <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeField(i)">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+  
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label class="form-label">Alan Adı <span class="text-danger">*</span></label>
+                  <input type="text" formControlName="name" class="form-control">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Veri Tipi <span class="text-danger">*</span></label>
+                  <select formControlName="dataType" class="form-select">
+                    <option *ngFor="let type of dataTypes" [value]="type">{{ type }}</option>
+                  </select>
+                </div>
+              </div>
+  
+              <div class="row mb-3">
+                <div class="col-md-12">
+                  <label class="form-label">Açıklama</label>
+                  <textarea formControlName="description" class="form-control"></textarea>
+                </div>
+              </div>
+  
+              <div class="row mb-3">
+                <div class="col-md-3">
+                  <div class="form-check">
+                    <input type="checkbox" formControlName="isRequired" class="form-check-input" id="isRequired{{i}}">
+                    <label class="form-check-label" for="isRequired{{i}}">Zorunlu Alan</label>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label">Max Uzunluk</label>
+                  <input type="number" formControlName="maxLength" class="form-control">
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label">Varsayılan Değer</label>
+                  <input type="text" formControlName="defaultValue" class="form-control">
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label">Sıra <span class="text-danger">*</span></label>
+                  <input type="number" formControlName="displayOrder" class="form-control">
+                </div>
+              </div>
+  
+              <!-- Object tipi için nested model seçeneği -->
+              <div class="row mb-3" *ngIf="field.get('dataType')?.value === 'Object'">
+                <div class="col-md-6">
+                  <label class="form-label">İç Model ID</label>
+                  <input type="number" formControlName="nestedModelId" class="form-control">
+                </div>
+              </div>
+  
+              <!-- Alan Validasyon Kuralları -->
+              <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                  <h6 class="mb-0">Alan Validasyon Kuralları</h6>
+                  <button type="button" class="btn btn-sm btn-outline-primary" (click)="addFieldValidationRule(i)">
+                    <i class="bi bi-plus"></i> Kural Ekle
+                  </button>
+                </div>
+                <div class="card-body">
+                  <div formArrayName="validationRules">
+                    <div *ngIf="getFieldValidationRules(i).length === 0" class="alert alert-info">
+                      Bu alan için henüz validasyon kuralı eklenmemiş.
+                    </div>
+  
+                    <div *ngFor="let rule of getFieldValidationRules(i).controls; let j = index" 
+                      [formGroupName]="j" class="mb-3 p-3 border rounded">
+                      <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="mb-0">Validasyon Kuralı #{{ j + 1 }}</h6>
+                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                          (click)="removeFieldValidationRule(i, j)">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </div>
+  
+                      <div class="row mb-3">
+                        <div class="col-md-6">
+                          <label class="form-label">Kural Tipi <span class="text-danger">*</span></label>
+                          <select formControlName="ruleName" class="form-select" 
+                            (change)="onFieldRuleTypeChange(i, j)">
+                            <option value="">Kural tipi seçin</option>
+                            <option *ngFor="let type of validationRuleTypes" [value]="type.name" 
+                              [disabled]="!type.fieldLevel">
+                              {{ type.name }}
+                            </option>
+                          </select>
+                        </div>
+                        <div class="col-md-6">
+                          <label class="form-label">Hata Mesajı <span class="text-danger">*</span></label>
+                          <input type="text" formControlName="errorMessage" class="form-control">
+                        </div>
+                      </div>
+  
+                      <div formGroupName="parameters">
+                        <!-- MinLength parametreleri -->
+                        <div *ngIf="rule.get('ruleName')?.value === 'MinLength'" class="row mb-3">
+                          <div class="col-md-6">
+                            <label class="form-label">Minimum Uzunluk <span class="text-danger">*</span></label>
+                            <input type="number" formControlName="min" class="form-control">
+                          </div>
+                        </div>
+  
+                        <!-- MaxLength parametreleri -->
+                        <div *ngIf="rule.get('ruleName')?.value === 'MaxLength'" class="row mb-3">
+                          <div class="col-md-6">
+                            <label class="form-label">Maximum Uzunluk <span class="text-danger">*</span></label>
+                            <input type="number" formControlName="max" class="form-control">
+                          </div>
+                        </div>
+  
+                        <!-- Pattern parametreleri -->
+                        <div *ngIf="rule.get('ruleName')?.value === 'Pattern'" class="row mb-3">
+                          <div class="col-md-12">
+                            <label class="form-label">Regex Deseni <span class="text-danger">*</span></label>
+                            <input type="text" formControlName="regex" class="form-control">
+                          </div>
+                        </div>
+  
+                        <!-- Range parametreleri -->
+                        <div *ngIf="rule.get('ruleName')?.value === 'Range'" class="row mb-3">
+                          <div class="col-md-6">
+                            <label class="form-label">Minimum Değer <span class="text-danger">*</span></label>
+                            <input type="number" formControlName="min" class="form-control">
+                          </div>
+                          <div class="col-md-6">
+                            <label class="form-label">Maximum Değer <span class="text-danger">*</span></label>
+                            <input type="number" formControlName="max" class="form-control">
+                          </div>
+                        </div>
+  
+                        <!-- OneOf parametreleri -->
+                        <div *ngIf="rule.get('ruleName')?.value === 'OneOf'" class="row mb-3">
+                          <div class="col-md-12">
+                            <label class="form-label">İzin Verilen Değerler (virgülle ayırın) <span class="text-danger">*</span></label>
+                            <input type="text" formControlName="values" class="form-control" 
+                              placeholder="değer1,değer2,değer3">
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+  
+      <div class="d-flex justify-content-end gap-2 mb-4">
+        <button type="button" class="btn btn-secondary" (click)="cancel()">İptal</button>
+        <button type="submit" class="btn btn-primary" [disabled]="submitting">
+          <span *ngIf="submitting" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+          {{ isEditMode ? 'Güncelle' : 'Oluştur' }}
+        </button>
+      </div>
+    </form>
+  </div>
